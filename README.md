@@ -559,3 +559,52 @@ WHERE
     revenue > avg_revenue_cte.avg_revenue AND
 		rating > avg_rating_cte.avg_rating;
 ```
+
+- correlated subquery
+
+```sql
+-- 같은 해에 개봉된 영화의 평균보다 높은 평점인 영화 리스트
+
+SELECT
+	main_movies.title,
+  main_movies.director,
+  main_movies.rating
+FROM
+	movies AS main_movies
+WHERE
+	main_movies.release_date >= '2020' AND
+	main_movies.rating > (SELECT
+            	AVG(inner_movies.rating)
+            FROM
+            	movies AS inner_movies
+            WHERE
+            	inner_movies.release_date = main_movies.release_date); -- 외부값을 참조하고 있다.
+```
+
+CTE가 main_movies를 참조하고있다.
+
+sqlite에서만 동작하고 mysql이나 postgresql에서는 동작하지 않음
+
+```sql
+-- 같은 해에 개봉된 영화의 평균보다 높은 평점인 영화 리스트
+WITH rating_avg_per_year_cte AS (
+  SELECT
+    AVG(inner_movies.rating) AS rating_avg_per_year
+  FROM
+    movies AS inner_movies
+  WHERE
+    inner_movies.release_date = main_movies.release_date
+)
+SELECT
+  main_movies.title,
+  main_movies.director,
+  main_movies.rating,
+  main_movies.release_date,
+  (SELECT rating_avg_per_year FROM rating_avg_per_year_cte) AS rating_avg_per_year
+FROM
+  movies AS main_movies
+WHERE
+  main_movies.release_date >= '2022' AND
+  main_movies.rating > (SELECT rating_avg_per_year FROM rating_avg_per_year_cte);
+
+```
