@@ -507,3 +507,55 @@ SELECT * FROM v_flop_or_not;
 
 DROP VIEW v_flop_or_not;
 ```
+
+## SubQueries And (Common Table Expressions)CTEs
+
+- independent subquery
+  query planner가 알아서 최적화 해준다. 모든 row에 대해서 시행되지 않고, 한 번 실행된다.
+
+```sql
+-- 전체 영화중, 평점이나 수익이 평균보다 높은 영화리스트
+SELECT
+	COUNT(*)
+FROM
+	movies
+WHERE
+	rating > ( -- independent subquery (매번 실행되지 않는다) run once
+    SELECT
+    	AVG(rating)
+		FROM
+    	movies);
+```
+
+- CTE (재사용 목적)
+  CTE는 table을 return 하기때문에, 사용하려는 column으로 값을 가져와야 한다. `avg_revenue_cte.avg_revenue`
+
+```sql
+-- 전체 영화중, 평점이나 수익이 평균보다 높은 영화리스트
+-- CTE
+WITH avg_revenue_cte AS (
+    SELECT
+        AVG(revenue) AS avg_revenue
+    FROM
+        movies
+), avg_rating_cte AS (
+		SELECT
+        AVG(rating) AS avg_rating
+    FROM
+        movies
+)
+SELECT
+    title,
+    director,
+    revenue,
+    ROUND(avg_revenue_cte.avg_revenue, 0) AS avg_revenue,
+    rating,
+    ROUND(avg_rating_cte.avg_rating, 0) AS avg_rating
+FROM
+    movies,
+    avg_revenue_cte,
+    avg_rating_cte
+WHERE
+    revenue > avg_revenue_cte.avg_revenue AND
+		rating > avg_rating_cte.avg_rating;
+```
