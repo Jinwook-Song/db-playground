@@ -809,3 +809,13 @@ query plan
 208	198	0	SEARCH movies USING INDEX idx_director (director=?)
 230	198	0	USE TEMP B-TREE FOR ORDER BY
 ```
+
+## MySQL
+
+도커로 설치 후, mysql workbench와 연결 ([도커문서](https://hub.docker.com/_/mysql))
+
+`docker pull mysql:8`
+
+`docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag`
+
+mysql workbench로 연결
