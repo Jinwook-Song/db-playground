@@ -856,3 +856,31 @@ CONSTRAINT uq_email UNIQUE(email)
 CONSTRAINT는 inline 방식 또는 named 방식이 있다.
 
 named의 경우 `CONSTRAINT uq_profile UNIQUE(username, email)` 과 같이 조합으로 사용할 수 있다.
+
+- Insert
+
+```sql
+INSERT INTO users (
+username,
+email,
+gender,
+interests,
+bio,
+age,
+is_admin,
+birth_date,
+bed_time,
+graduation_year
+) VALUES (
+'jw',
+'jw@hello.com',
+'Male',
+'Travel,Music,Technology,Science',
+'coding and watch movie',
+31,
+TRUE,
+'1993.01.29',
+'00:30',
+'2016'
+);
+```
