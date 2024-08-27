@@ -942,3 +942,28 @@ ALTER TABLE users ADD COLUMN
 
 ALTER TABLE users DROP COLUMN graduation_year;
 ```
+
+- Generated Column
+  options: STORED, VIRTUAL
+
+```sql
+CREATE TABLE users_v2 (
+	user_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	first_name VARCHAR(50),
+	last_name VARCHAR(50),
+	email VARCHAR(100),
+	full_name VARCHAR(101) GENERATED ALWAYS AS (
+CONCAT(first_name, ' ', last_name)) STORED
+);
+
+INSERT INTO users_v2 (first_name, last_name, email) VALUES (
+	'jinwook',
+	'song',
+	'jwsong@gmail.com'
+);
+
+ALTER TABLE users_v2
+	ADD COLUMN email_domain VARCHAR(50) GENERATED ALWAYS AS (
+SUBSTRING_INDEX(email, '@', - 1)) virtual; -- 디스크에 저장되지 않고 SELECT 시점에 계산된다.
+
+```
