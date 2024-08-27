@@ -884,3 +884,40 @@ TRUE,
 '2016'
 );
 ```
+
+- ALTER TABLE
+
+```sql
+-- Table 상세정보
+SHOW CREATE TABLE users;
+
+-- drop column
+ALTER TABLE users DROP COLUMN balance;
+
+-- renmae columm: 타입을 명시해야한다
+ALTER TABLE users CHANGE COLUMN bio about_me TINYTEXT;
+
+-- change the column type
+ALTER TABLE users MODIFY COLUMN about_me TEXT;
+
+-- rename database
+ALTER TABLE users RENAME TO customers;
+ALTER TABLE customers RENAME TO users;
+
+-- drop constraints
+ALTER TABLE users
+	DROP CONSTRAINT uq_email,
+	DROP CONSTRAINT username,
+	DROP CONSTRAINT chk_age;
+
+-- add constraints
+ALTER TABLE users
+	ADD CONSTRAINT uq_email UNIQUE (email),
+	ADD CONSTRAINT uq_username UNIQUE (username);
+ALTER TABLE users
+	ADD CONSTRAINT chk_age CHECK (age < 100);
+
+-- NOT NULL <-> NULL
+ALTER TABLE users MODIFY COLUMN bed_time TIME NULL;
+
+```
