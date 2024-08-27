@@ -885,7 +885,7 @@ TRUE,
 );
 ```
 
-- ALTER TABLE
+- ALTER TABLE (BASIC)
 
 ```sql
 -- Table 상세정보
@@ -919,5 +919,26 @@ ALTER TABLE users
 
 -- NOT NULL <-> NULL
 ALTER TABLE users MODIFY COLUMN bed_time TIME NULL;
+```
 
+- ALTER TABLE (Data Type)
+
+type을 변경하는 경우, 새 컬럼을 생성하고 및 복제 완료 후 기존 컬럼을 drop 시킨다.
+
+```sql
+
+-- 컬럼의 DATA type 변경 1
+ALTER TABLE users ADD COLUMN graduation_date DATE;
+
+UPDATE users SET graduation_date = MAKEDATE(graduation_year, 1);
+
+ALTER TABLE users DROP COLUMN graduation_year;
+
+ALTER TABLE users MODIFY COLUMN graduation_date DATE NOT NULL;
+
+-- 컬럼의 DATA type 변경 2
+ALTER TABLE users ADD COLUMN
+	graduation_date DATE NOT NULL DEFAULT MAKEDATE(graduation_year, 1);
+
+ALTER TABLE users DROP COLUMN graduation_year;
 ```
