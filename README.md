@@ -3,7 +3,8 @@
 | 프로젝트 목적 | Study SQL                                                              |
 | Github        | https://github.com/Jinwook-Song/db-playground                          |
 | docs          |                                                                        |
-| sample data   | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies_download.db |
+| data(sqlite)  | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies_download.db |
+| data(json)    | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies-data.json   |
 
 ---
 
@@ -766,6 +767,22 @@ CREATE INDEX idx_director ON movies (director);
 
 ## Indexes
 
+```sql
+/*
+- Columns you use often (WHERE, ORDER BY, JOIN*)
+- Columns with many unique values (high cardinality)
+- Large tables.
+- Foreign keys*
+- Don't Over Index (INSERT, UPDATE, DELETE, Storage)
+- Add them after you are done, to speed up queries.
+- Multi-Column (Composite Indexes) for queries that filter or sort by multiple columns together.
+- Covering indexes, if you can and it's cheap.
+- Don't index small tables.
+- Consider Update frequency
+- Large text column? Use a full-text* index rather than a B-tree.
+*/
+```
+
 table scan → 한 행씩 찾아보는것
 
 query plan
@@ -809,6 +826,18 @@ query plan
 208	198	0	SEARCH movies USING INDEX idx_director (director=?)
 230	198	0	USE TEMP B-TREE FOR ORDER BY
 ```
+
+- B+ tree
+- Multi Column Index
+  index의 순서도 중요하다. 범위에 대해 query를 요청하면 index에서 앞의 column만 사용된다. → 자주 사용되는 column을 앞에 배치
+
+```sql
+CREATE INDEX idx_release_rating ON movies (release_date, rating);
+
+```
+
+- covering index
+  multi column index를 사용하는 경우, select에 해당 컬럼이 포함되어있으면 main db로 점프하지 않고도, index만으로 결과를 return 받을 수 있다. (index에서 해당 값을 가지고 있기 때문에 당연한 논리)
 
 ## MySQL
 
@@ -966,4 +995,51 @@ ALTER TABLE users_v2
 	ADD COLUMN email_domain VARCHAR(50) GENERATED ALWAYS AS (
 SUBSTRING_INDEX(email, '@', - 1)) virtual; -- 디스크에 저장되지 않고 SELECT 시점에 계산된다.
 
+```
+
+## Foreign key
+
+- Entity
+  하나의 테이블엔 하나의 관심사만 담도록 분리
+
+```sql
+CREATE TABLE dogs (
+    dog_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    breed_name VARCHAR(50) NOT NULL,
+    breed_size_category ENUM('small', 'medium', 'big') DEFAULT 'small',
+    breed_typical_lifespan TINYINT,
+    date_of_birth DATE,
+    weight DECIMAL(5,2),
+    owner_name VARCHAR(50) NOT NULL,
+    owner_email VARCHAR(100) UNIQUE,
+    owner_phone VARCHAR(20),
+    owner_address TINYTEXT
+);
+
+->
+
+CREATE TABLE dogs (
+	dog_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	name VARCHAR(50) NOT NULL,
+	date_of_birth DATE,
+	weight DECIMAL (5,2),
+	breed_id BIGINT UNSIGNED,
+	owner_id BIGINT UNSIGNED
+);
+
+CREATE TABLE breeds (
+	breed_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	name VARCHAR(50) NOT NULL,
+	size_category ENUM ('small','medium','big') DEFAULT 'small',
+	typical_lifespan TINYINT
+);
+
+CREATE TABLE owners (
+	owner_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	name VARCHAR(50) NOT NULL,
+	email VARCHAR(100) UNIQUE,
+	phone VARCHAR(20),
+	address TINYTEXT
+);
 ```
