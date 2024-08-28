@@ -1058,3 +1058,13 @@ CREATE TABLE dogs (
 	CONSTRAINT owner_fk FOREIGN KEY (owner_id) REFERENCES owners (owner_id) -- named
 );
 ```
+
+- ON DELETE
+
+```sql
+CASCADE -- 부모가 삭제되면 관련된 자식 행이 모두 삭제됨
+SET NULL -- 이 옵션은 외래 키 컬럼이 NULL을 허용할 수 있을 때만 사용
+RESTRICT -- 참조되고 있는 한, 그 행을 삭제할 수 없음
+NO ACTION -- RESTRICT와 동일하게 동작
+SET DEFAULT -- 컬럼이 기본값을 가질 수 있을 때만 사용 가능
+```
