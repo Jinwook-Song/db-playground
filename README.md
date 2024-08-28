@@ -1043,3 +1043,18 @@ CREATE TABLE owners (
 	address TINYTEXT
 );
 ```
+
+- foreign key (constraints)
+
+```sql
+CREATE TABLE dogs (
+	dog_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	name VARCHAR(50) NOT NULL,
+	date_of_birth DATE,
+	weight DECIMAL (5,2),
+	breed_id BIGINT UNSIGNED,
+	owner_id BIGINT UNSIGNED,
+	FOREIGN KEY (breed_id) REFERENCES breeds (breed_id), -- unnamed
+	CONSTRAINT owner_fk FOREIGN KEY (owner_id) REFERENCES owners (owner_id) -- named
+);
+```
