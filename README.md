@@ -1068,3 +1068,33 @@ RESTRICT -- 참조되고 있는 한, 그 행을 삭제할 수 없음
 NO ACTION -- RESTRICT와 동일하게 동작
 SET DEFAULT -- 컬럼이 기본값을 가질 수 있을 때만 사용 가능
 ```
+
+- One-to-Many, One-to-One
+
+```sql
+CREATE TABLE pet_passports (
+	pet_passport_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	blood_type VARCHAR(5),
+	dog_id BIGINT UNSIGNED UNIQUE, -- One-to-One
+	FOREIGN KEY (dog_id) REFERENCES dogs (dog_id) ON DELETE CASCADE
+);
+```
+
+- Many-to-Many
+  두 테이블을 연결하는 bridge table을 활용한다.
+
+```sql
+CREATE TABLE tricks (
+	trick_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	name VARCHAR(50) NOT NULL,
+	difficulty ENUM ('easy', 'medium', 'hard') NOT NULL DEFAULT 'easy'
+);
+
+CREATE TABLE dog_tricks (
+	dog_id BIGINT UNSIGNED,
+	trick_id BIGINT UNSIGNED,
+	PRIMARY KEY (dog_id, trick_id),
+	FOREIGN KEY (dog_id) REFERENCES dogs (dog_id) ON DELETE CASCADE,
+	FOREIGN KEY (trick_id) REFERENCES tricks (trick_id) ON DELETE CASCADE
+);
+```
