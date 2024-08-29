@@ -1235,3 +1235,47 @@ INSERT INTO pet_passports (dog_id, blood_type, allergies, last_checkup_date) VAL
 (18, 'DEA 7+', 'None', '2023-04-03'),
 (20, 'DEA 4+', 'Pollen', '2023-06-22');,
 ```
+
+- CROSS JOIN
+
+두 테이블의 모든 행을 서로 조합한 결과를 반환
+
+```sql
+SELECT * FROM dogs CROSS JOIN owners;
+```
+
+- INNER JOIN (JOIN)
+
+두 테이블에서 공통된 값을 가지는 행들만을 결합하여 반환
+
+두 테이블 간의 **조인 조건**이 반드시 필요하며, 이 조건에 맞는 행들만 결과로 반환
+
+```sql
+SELECT
+	dogs.name AS dog_name,
+	owners.name AS owner_name,
+	breeds.*
+FROM
+	dogs
+	JOIN owners ON dogs.owner_id = owners.owner_id
+	JOIN breeds USING(breed_id); -- 동일한 컬럼명을 사용하는 경우
+```
+
+- OUTER JOIN
+
+테이블 간의 관계를 이해하고, 필요한 데이터를 포함하면서 데이터 누락을 방지
+
+**LEFT JOIN**: 왼쪽 테이블의 모든 행과 오른쪽 테이블의 일치하는 행을 결합하며, 일치하지 않는 경우 오른쪽 테이블의 열을 NULL로 채움
+
+**RIGHT JOIN**: LEFT JOIN의 반대
+
+**FULL OUTER JOIN**: 양쪽 테이블의 모든 행을 결합하며, 일치하지 않는 경우 NULL로 표시합니다. MySQL에서는 이를 지원하지 않으므로 LEFT JOIN과 RIGHT JOIN의 조합 구현
+
+```sql
+SELECT
+	dogs.name AS dog_name,
+	owners.name AS owner_name
+FROM
+	dogs
+	RIGHT JOIN owners ON dogs.owner_id = owners.owner_id;
+```
