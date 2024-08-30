@@ -1279,3 +1279,171 @@ FROM
 	dogs
 	RIGHT JOIN owners ON dogs.owner_id = owners.owner_id;
 ```
+
+- Practice
+
+```sql
+-- List all dogs with there breed name
+SELECT
+	dogs.*,
+	breeds. `name`
+FROM
+	dogs
+	JOIN breeds USING (breed_id);
+
+-- Show all owners and their dogs (if they have any)
+SELECT * FROM owners JOIN dogs USING (owner_id);
+
+-- Display all breeds and the dogs of that breeds (if any)
+SELECT * FROM breeds JOIN dogs USING (breed_id);
+
+-- List all dogs with their pet passports
+-- information and owner data (if available)
+
+SELECT
+	d.`name`,
+	pp.allergies,
+	o.`name`
+FROM
+	dogs d
+	LEFT JOIN pet_passports pp USING (dog_id)
+	LEFT JOIN owners o USING (owner_id);
+
+-- show all tricks and the dogs that they know them
+SELECT
+	tricks.`name`,
+	dogs.`name`,
+	dog_tricks.proficiency,
+	dog_tricks.date_learned
+FROM
+	tricks
+	JOIN dog_tricks ON tricks.trick_id = dog_tricks.trick_id
+	JOIN dogs ON dogs.dog_id = dog_tricks.dog_id;
+
+-- Display all dogs that don't know a single tricks
+SELECT
+	dogs. `name`
+FROM
+	dogs
+	LEFT JOIN dog_tricks USING (dog_id)
+WHERE
+	dog_tricks.dog_id IS NULL;
+
+-- show all breeds and the count of dogs for each breed
+SELECT
+	breeds. `name`,
+	COUNT(*) dog_count
+FROM
+	breeds
+	RIGHT JOIN dogs USING (breed_id)
+GROUP BY
+	breeds. `name`;
+
+-- Display all owners with
+-- the count of their dogs,
+-- the average dog weight and the average dog age.
+
+SELECT
+	owners. `name` owner_name,
+	COUNT(dogs.owner_id) total_dogs,
+	AVG(dogs.weight) avg_weight,
+	ROUND(AVG(TIMESTAMPDIFF(YEAR, dogs.date_of_birth, CURDATE())),1) avg_age
+FROM
+	owners
+	LEFT JOIN dogs USING (owner_id)
+GROUP BY
+	owners.owner_id;
+
+-- Show all tricks and the number
+-- of dogs that know each trick
+-- ordered by popularity
+
+SELECT
+	tricks. `name`,
+	COUNT(dog_tricks.dog_id) dog_count
+FROM
+	tricks
+	JOIN dog_tricks USING (trick_id)
+GROUP BY
+	tricks.trick_id
+ORDER BY dog_count DESC;
+
+-- Display all dogs along with the count of tricks they know
+SELECT
+	dogs. `name`,
+	COUNT(*)
+FROM
+	dogs
+	JOIN dog_tricks USING (dog_id)
+GROUP BY
+	dogs.dog_id;
+
+-- List all owners with their dogs and the tricks their dogs know
+SELECT
+	o. `name`,
+	d.`name`,
+	t.`name`,
+	dt.proficiency
+FROM
+	owners o
+	JOIN dogs d USING (owner_id)
+	JOIN dog_tricks dt USING (dog_id)
+	JOIN tricks t USING (trick_id);
+
+-- Show all breeds with their average dog weight and typical lifespan
+SELECT
+	breeds. `name`,
+	AVG(dogs.weight),
+	breeds.typical_lifespan
+FROM
+	breeds
+	JOIN dogs USING (breed_id)
+GROUP BY
+	breeds.breed_id;
+
+-- Display all dogs with their latest checkup date and the time since their last checkup
+SELECT
+	dogs. `name`,
+	pp.last_checkup_date,
+	TIMESTAMPDIFF(DAY, pp.last_checkup_date, CURDATE())
+FROM
+	dogs
+	JOIN pet_passports pp USING (dog_id)
+GROUP BY
+	dogs.dog_id;
+
+-- Display all breeds with the name of the heaviest dog of that breed
+SELECT
+    breeds.name AS breed_name,
+    dogs.name AS dog_name,
+    dogs.weight
+FROM
+    breeds
+JOIN
+    dogs USING(breed_id)
+WHERE
+    dogs.weight = (
+        SELECT MAX(d.weight)
+        FROM dogs d
+        WHERE d.breed_id = breeds.breed_id
+    );
+
+-- List all tricks with the name of the dog who learned it most recently
+SELECT
+	tricks. `name`,
+	dogs. `name`,
+	dog_tricks.date_learned
+FROM
+	tricks
+	JOIN dog_tricks USING (trick_id)
+	JOIN dogs USING (dog_id)
+WHERE
+	dog_tricks.date_learned = (
+		SELECT
+			MAX(dog_tricks.date_learned)
+		FROM
+			dog_tricks
+		WHERE
+			dog_tricks.trick_id = tricks.trick_id);
+
+```
