@@ -1577,10 +1577,11 @@ WHERE
   ALTER TABLE movies DROP COLUMN original_language;
   ```
 
-- Normalizing `country`
+- Normalizing `country` (many to many)
   - union
   행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
   ```sql
+  -- Comma 1개
   SELECT
   	SUBSTRING_INDEX(country, ',', 1)
   FROM
@@ -1598,6 +1599,36 @@ WHERE
   	country LIKE '__,__'
   GROUP BY
   	country;
+
+  -- Commna 2개
+  INSERT IGNORE INTO countries (country_code)
+  SELECT
+  	SUBSTRING_INDEX(country, ',', 1)
+  FROM
+  	movies
+  WHERE
+  	country LIKE '__,__,__'
+  GROUP BY
+  	country
+  UNION
+  SELECT
+  	SUBSTRING_INDEX(country, ',', -1)
+  FROM
+  	movies
+  WHERE
+  	country LIKE '__,__,__'
+  GROUP BY
+  	country
+  UNION
+  SELECT
+  	SUBSTRING_INDEX(SUBSTRING_INDEX(country, ',', 2), ',', -1)
+  FROM
+  	movies
+  WHERE
+  	country LIKE '__,__,__'
+  GROUP BY
+  	country;
+
   ```
   - ignore
   오류를 발생시키지 않고 해당 행을 무시
@@ -1620,4 +1651,16 @@ WHERE
   	country LIKE '__,__'
   GROUP BY
   	country;
+  ```
+  - movies_countries column으로 연결
+  ```sql
+  INSERT INTO movies_countries (movie_id, country_id)
+  SELECT
+  	movies.movie_id,
+  	countries.country_id
+  FROM
+  	movies
+  	JOIN countries ON movies.country LIKE CONCAT('%', countries.country_code, '%')
+  WHERE
+  	movies.country <> '';
   ```
