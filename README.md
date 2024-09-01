@@ -1451,46 +1451,86 @@ WHERE
 ## Normalization
 
 - Normalizing `status`
+  1. statuses 컬럼 생성
+  2. 각 status row 생성
+  3. movies 테이블에 status_id 컬럼 생성
+  4. foreign key 연결
+  5. movies 테이블의 status에 따라 status_id 업데이트
+  6. movies 테이블의 status 컬럼 삭제
+  ```sql
+  CREATE TABLE statuses (
+  	status_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  	status_name ENUM (
+  		'Canceled',
+  		'In Production',
+  		'Planned',
+  		'Post Production',
+  		'Released',
+  		'Rumored') NOT NULL,
+  	explanation TEXT,
+  	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
+  );
 
-1. statuses 컬럼 생성
-2. 각 status row 생성
-3. movies 테이블에 status_id 컬럼 생성
-4. foreign key 연결
-5. movies 테이블의 status에 따라 status_id 업데이트
-6. movies 테이블의 status 컬럼 삭제
+  insert INTO statuses (status_name) SELECT status from movies GROUP BY status;
 
-```sql
-CREATE TABLE statuses (
-	status_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-	status_name ENUM (
-		'Canceled',
-		'In Production',
-		'Planned',
-		'Post Production',
-		'Released',
-		'Rumored') NOT NULL,
-	explanation TEXT,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
-);
+  ALTER TABLE movies ADD COLUMN status_id BIGINT UNSIGNED;
 
-insert INTO statuses (status_name) SELECT status from movies GROUP BY status;
+  ALTER TABLE movies
+  	ADD CONSTRAINT fk_status FOREIGN KEY (status_id) REFERENCES statuses (status_id) ON DELETE SET NULL;
 
-ALTER TABLE movies ADD COLUMN status_id BIGINT UNSIGNED;
+  UPDATE
+  	movies
+  SET
+  	status_id = (
+  		SELECT
+  			status_id
+  		FROM
+  			statuses
+  		WHERE
+  			statuses.status_name = movies.status);
 
-ALTER TABLE movies
-	ADD CONSTRAINT fk_status FOREIGN KEY (status_id) REFERENCES statuses (status_id) ON DELETE SET NULL;
+  ALTER TABLE movies DROP COLUMN status;
+  ```
+- Normalizing `director`
+  director 수가 많기 때문에, movie table을 업데이트 하기전에 indexing을 한다
+  미리 indexing을 하는것이 아닌 필요할때, 추가한다
+  `CREATE INDEX idx_director_name ON directors (name);`
+  ```sql
+  CREATE TABLE directors (
+  	director_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  	name VARCHAR(120),
+  	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
+  );
 
-UPDATE
-	movies
-SET
-	status_id = (
-		SELECT
-			status_id
-		FROM
-			statuses
-		WHERE
-			statuses.status_name = movies.status);
+  INSERT INTO directors (name)
+  SELECT
+  	director
+  FROM
+  	movies
+  GROUP BY
+  	director
+  HAVING
+  	director <> '';
 
-ALTER TABLE movies DROP COLUMN status;
-```
+  ALTER TABLE movies ADD COLUMN director_id BIGINT UNSIGNED;
+
+  ALTER TABLE movies
+  	ADD CONSTRAINT fk_director FOREIGN KEY (director_id) REFERENCES directors (director_id) ON DELETE SET NULL;
+
+  CREATE INDEX idx_director_name ON directors (name);
+
+  UPDATE
+  	movies
+  SET
+  	director_id = (
+  		SELECT
+  			director_id
+  		FROM
+  			directors
+  		WHERE
+  			directors.name = movies.director);
+
+  ALTER TABLE movies DROP COLUMN director;
+  ```
