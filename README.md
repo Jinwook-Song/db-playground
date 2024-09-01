@@ -1447,3 +1447,50 @@ WHERE
 			dog_tricks.trick_id = tricks.trick_id);
 
 ```
+
+## Normalization
+
+- Normalizing `status`
+
+1. statuses 컬럼 생성
+2. 각 status row 생성
+3. movies 테이블에 status_id 컬럼 생성
+4. foreign key 연결
+5. movies 테이블의 status에 따라 status_id 업데이트
+6. movies 테이블의 status 컬럼 삭제
+
+```sql
+CREATE TABLE statuses (
+	status_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	status_name ENUM (
+		'Canceled',
+		'In Production',
+		'Planned',
+		'Post Production',
+		'Released',
+		'Rumored') NOT NULL,
+	explanation TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
+);
+
+insert INTO statuses (status_name) SELECT status from movies GROUP BY status;
+
+ALTER TABLE movies ADD COLUMN status_id BIGINT UNSIGNED;
+
+ALTER TABLE movies
+	ADD CONSTRAINT fk_status FOREIGN KEY (status_id) REFERENCES statuses (status_id) ON DELETE SET NULL;
+
+UPDATE
+	movies
+SET
+	status_id = (
+		SELECT
+			status_id
+		FROM
+			statuses
+		WHERE
+			statuses.status_name = movies.status);
+
+ALTER TABLE movies DROP COLUMN status;
+```
