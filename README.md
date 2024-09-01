@@ -1540,6 +1540,7 @@ WHERE
   ```
 
 - Normalizing `original_language`
+
   ```sql
   CREATE TABLE langs (
   	lang_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1574,4 +1575,49 @@ WHERE
   			langs.code = movies.original_language);
 
   ALTER TABLE movies DROP COLUMN original_language;
+  ```
+
+- Normalizing `country`
+  - union
+  행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
+  ```sql
+  SELECT
+  	SUBSTRING_INDEX(country, ',', 1)
+  FROM
+  	movies
+  WHERE
+  	country LIKE '__,__'
+  GROUP BY
+  	country
+  UNION
+  SELECT
+  	SUBSTRING_INDEX(country, ',', - 1)
+  FROM
+  	movies
+  WHERE
+  	country LIKE '__,__'
+  GROUP BY
+  	country;
+  ```
+  - ignore
+  오류를 발생시키지 않고 해당 행을 무시
+  ```sql
+  INSERT IGNORE INTO countries (country_code)
+  SELECT
+  	SUBSTRING_INDEX(country, ',', 1)
+  FROM
+  	movies
+  WHERE
+  	country LIKE '__,__'
+  GROUP BY
+  	country
+  UNION
+  SELECT
+  	SUBSTRING_INDEX(country, ',', - 1)
+  FROM
+  	movies
+  WHERE
+  	country LIKE '__,__'
+  GROUP BY
+  	country;
   ```
