@@ -1758,3 +1758,22 @@ BEGIN
 END$$
 DELIMITER ;
 ```
+
+## FullText indexes
+
+- natural language mode: MySQL이 텍스트 내에서 가장 관련성이 높은 결과를 자동으로 찾아 반환
+- boolean mode: 더 복잡한 쿼리를 작성할 수 있게 하며, 특정 단어를 반드시 포함하거나 제외
+
+```sql
+CREATE fulltext INDEX idx_overview on movies (overview);
+
+SELECT
+	title,
+	overview,
+	MATCH(overview) AGAINST ('The food') as score
+FROM
+	movies
+WHERE
+	MATCH(overview) AGAINST ('The food');
+
+```
