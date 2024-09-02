@@ -1685,7 +1685,7 @@ WHERE
 
 이외에도 ON COMPLETION 등으로 이벤트를 특정 시점에 DROP 할 수 있다.
 
-```bash
+```sql
 CREATE TABLE archived_movies LIKE movies;
 
 -- clear table
@@ -1706,4 +1706,33 @@ BEGIN -- 두 개 이상의 명령을 실행하는 경우
 	DELETE FROM movies WHERE release_date < YEAR(CURDATE()) - 20;
 END$$
 DELIMITER ;
+```
+
+- Triggers
+
+데이터를 조작할때 trigger를 사용(Before, After), 사용가능. 직관적이다
+
+OLD, NEW를 통해 변경 전, 변경 후의 데이터를 알 수 있다.
+
+```sql
+-- BEFORE: INSERT, UPDATE, DELETE.
+-- AFTER: INSERT, UPDATE, DELETE.
+
+CREATE TABLE records (
+	record_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+	changes tinytext,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TRIGGER before_movie_insert
+	BEFORE INSERT ON movies
+	FOR EACH ROW INSERT INTO records (changes)
+		VALUES(CONCAT('will insert: ', NEW.title)
+);
+
+CREATE TRIGGER after_movie_insert
+	AFTER INSERT ON movies
+	FOR EACH ROW INSERT INTO records (changes)
+		VALUES(CONCAT('insert completed: ', NEW.title)
+);
 ```
