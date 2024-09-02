@@ -1578,8 +1578,10 @@ WHERE
   ```
 
 - Normalizing `country` (many to many)
+
   - union
-  행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
+    행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
+
   ```sql
   -- Comma 1개
   SELECT
@@ -1630,8 +1632,10 @@ WHERE
   	country;
 
   ```
+
   - ignore
-  오류를 발생시키지 않고 해당 행을 무시
+    오류를 발생시키지 않고 해당 행을 무시
+
   ```sql
   INSERT IGNORE INTO countries (country_code)
   SELECT
@@ -1652,7 +1656,9 @@ WHERE
   GROUP BY
   	country;
   ```
+
   - movies_countries column으로 연결
+
   ```sql
   INSERT INTO movies_countries (movie_id, country_id)
   SELECT
@@ -1664,3 +1670,40 @@ WHERE
   WHERE
   	movies.country <> '';
   ```
+
+## Events & Triggers
+
+기존 테이블 구조와 동일한 테이블 생성
+
+`CREATE TABLE archived_movies LIKE movies;`
+
+[CHAT-GPT](https://chatgpt.com/share/d5844020-c1d8-46d9-a363-879f3421750f)
+
+- event: cron과 유사하다. mysql에서만 사용가능
+
+**DELIMITER $$**: MySQL의 기본 명령문 종료 구분자인 ; 대신 $$를 사용하여 여러 명령문을 포함하는 이벤트 블록을 정의, 이벤트 블록이 끝난 후, 다시 기본 구분자인 ;로 변경
+
+이외에도 ON COMPLETION 등으로 이벤트를 특정 시점에 DROP 할 수 있다.
+
+```bash
+CREATE TABLE archived_movies LIKE movies;
+
+-- clear table
+TRUNCATE TABLE archived_movies;
+
+DROP EVENT archive_old_movies;
+
+DELIMITER $$
+CREATE EVENT archive_old_movies
+ON SCHEDULE EVERY 1 MINUTE
+STARTS CURRENT_TIMESTAMP + INTERVAL 2 MINUTE
+DO
+BEGIN -- 두 개 이상의 명령을 실행하는 경우
+	INSERT INTO archived_movies
+	SELECT * FROM movies
+	WHERE release_date < YEAR(CURDATE()) - 20;
+
+	DELETE FROM movies WHERE release_date < YEAR(CURDATE()) - 20;
+END$$
+DELIMITER ;
+```
