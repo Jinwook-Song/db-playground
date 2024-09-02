@@ -1762,7 +1762,6 @@ DELIMITER ;
 ## FullText indexes
 
 - natural language mode: MySQL이 텍스트 내에서 가장 관련성이 높은 결과를 자동으로 찾아 반환
-- boolean mode: 더 복잡한 쿼리를 작성할 수 있게 하며, 특정 단어를 반드시 포함하거나 제외
 
 ```sql
 CREATE fulltext INDEX idx_overview on movies (overview);
@@ -1775,5 +1774,71 @@ FROM
 	movies
 WHERE
 	MATCH(overview) AGAINST ('The food');
+
+```
+
+- [boolean mode](https://dev.mysql.com/doc/refman/8.4/en/fulltext-boolean.html): 더 복잡한 쿼리를 작성할 수 있게 하며, 특정 단어를 반드시 포함하거나 제외
+  ```sql
+  	•	+: 반드시 포함되어야 하는 단어를 지정.
+  	•	-: 포함되지 않아야 하는 단어를 지정.
+  	•	>, <: 단어의 중요도를 높이거나 낮춥니다.
+  	•	*: 단어의 일부 일치(와일드카드).
+  	•	"": 정확한 문구 검색.
+  	•	~: 단어의 중요도를 부정.
+  	•	(): 조건 그룹화.
+  ```
+
+```sql
+CREATE fulltext INDEX idx_overview on movies (overview);
+
+SELECT
+	title,
+	overview,
+	MATCH(overview) AGAINST ('+revenge >king -violence' IN BOOLEAN MODE) as score
+FROM
+	movies
+WHERE
+	MATCH(overview) AGAINST ('+revenge >king -violence' IN BOOLEAN MODE);
+
+```
+
+- natural language mode: MySQL이 텍스트 내에서 가장 관련성이 높은 결과를 자동으로 찾아 반환
+
+```sql
+CREATE fulltext INDEX idx_overview on movies (overview);
+
+SELECT
+	title,
+	overview,
+	MATCH(overview) AGAINST ('The food') as score
+FROM
+	movies
+WHERE
+	MATCH(overview) AGAINST ('The food');
+
+```
+
+- [boolean mode](https://dev.mysql.com/doc/refman/8.4/en/fulltext-boolean.html): 더 복잡한 쿼리를 작성할 수 있게 하며, 특정 단어를 반드시 포함하거나 제외
+  ```sql
+  	•	+: 반드시 포함되어야 하는 단어를 지정.
+  	•	-: 포함되지 않아야 하는 단어를 지정.
+  	•	>, <: 단어의 중요도를 높이거나 낮춥니다.
+  	•	*: 단어의 일부 일치(와일드카드).
+  	•	"": 정확한 문구 검색.
+  	•	~: 단어의 중요도를 부정.
+  	•	(): 조건 그룹화.
+  ```
+
+```sql
+CREATE fulltext INDEX idx_overview on movies (overview);
+
+SELECT
+	title,
+	overview,
+	MATCH(overview) AGAINST ('+revenge >king -violence' IN BOOLEAN MODE) as score
+FROM
+	movies
+WHERE
+	MATCH(overview) AGAINST ('+revenge >king -violence' IN BOOLEAN MODE);
 
 ```
