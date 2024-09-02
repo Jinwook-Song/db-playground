@@ -1736,3 +1736,25 @@ CREATE TRIGGER after_movie_insert
 		VALUES(CONCAT('insert completed: ', NEW.title)
 );
 ```
+
+```sql
+DELIMITER $$
+CREATE TRIGGER after_movie_update
+AFTER UPDATE
+ON movies
+FOR EACH ROW
+BEGIN
+	DECLARE changes TINYTEXT DEFAULT '';
+
+	IF NEW.title <> OLD.title THEN
+		SET changes = CONCAT('Title changed: ', OLD.title, '->', NEW.title, '\n');
+	END IF;
+
+	IF NEW.budget <> OLD.budget THEN
+		SET changes = CONCAT(changes, 'Budget changed: ', OLD.budget, '->', NEW.budget);
+	END IF;
+
+	INSERT INTO records (changes) VALUES (changes);
+END$$
+DELIMITER ;
+```
