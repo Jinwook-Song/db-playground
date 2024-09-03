@@ -1814,3 +1814,75 @@ FROM
 WHERE
 	MATCH(overview) AGAINST ('kimchi' WITH QUERY EXPANSION);
 ```
+
+## PostgresQL
+
+- docker 설치 및 실행
+
+```sql
+docker pull postgres
+docker run -d --name postgres-db -e POSTGRES_PASSWORD=123 -e TZ=Asia/Seoul -p 5432:5432 postgres
+docker exec -it postgres-db /bin/bash
+psql -U postgres # 기본 계정
+pgAdmin4 연결
+```
+
+- Data type
+
+이외에도 point, network address 등의 type이 있다. 해당 목적에 맞는 타입을 사용하면 postgres natvie 기능을 사용하기 좋다
+
+```sql
+CREATE TYPE gender_type AS ENUM ('male', 'female');
+
+CREATE TABLE users (
+
+	-- 0 < char(n) varchar(n) < 10,485,760
+	username CHAR(10) NOT NULL UNIQUE,
+	email VARCHAR(50) NOT NULL UNIQUE,
+
+	gender gender_type NOT NULL,
+
+	interests TEXT[] NOT NULL,
+
+	-- 1 GB
+	-- > 2KB TOAST (the oversized-attribute storage technique)
+	bio TEXT,
+
+	profile_photo BYTEA,
+
+
+	-- SMALLINT
+	-- Signed:	-32,768 to 32,767
+
+	-- INTEGER
+	-- Signed: -2,147,483,648 to 2,147,483,647
+
+	-- BIGINT
+	-- Signed: -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807
+
+	-- Unsigned 지원하지 않음 (check constraint로 제한)
+
+	-- SMALLSERIAL (1 to 32767)
+	-- SERIAL (1 to 2147483647)
+	-- BIGSERIAL (1 to 9223372036854775807
+
+	age SMALLINT NOT NULL CHECK (age >= 0),
+
+	is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+
+	-- 4713 BC to 294276 AD
+	joined_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+
+	-- on update가 없기 때문에, trigger를 사용해야 한다.
+	updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+
+	birth_date DATE NOT NULL,
+
+	bed_time TIME NOT NULL,
+
+	gradutaion_year INTEGER NOT NULL CHECK (gradutaion_year BETWEEN 1901 AND 2200),
+
+	intership_period INTERVAL
+
+);
+```
