@@ -1942,3 +1942,14 @@ FROM
 
 ALTER TABLE movies DROP COLUMN genres;
 ```
+
+left, right의 조합 (mysql에서는 미지원)
+
+```sql
+SELECT
+	movies.title,
+	directors. "name"
+FROM
+	movies
+	FULL JOIN directors USING (director_id);
+```
