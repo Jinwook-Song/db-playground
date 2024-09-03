@@ -1883,6 +1883,18 @@ CREATE TABLE users (
 	gradutaion_year INTEGER NOT NULL CHECK (gradutaion_year BETWEEN 1901 AND 2200),
 
 	intership_period INTERVAL
-
 );
+```
+
+- Type casting (::)
+
+```sql
+SELECT
+	joined_at::date as joined_date,
+	EXTRACT(YEAR FROM joined_at) as joined_year,
+	joined_at - INTERVAL '1 day' as day_before_joining,
+	AGE(birth_date) as age,
+	justify_interval(INTERVAL '312312 hour')
+FROM
+	users;
 ```
