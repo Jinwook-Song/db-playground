@@ -1,3 +1,5 @@
+# Database
+
 | 프로젝트 기간 | 24.08.23 ~                                                             |
 | ------------- | ---------------------------------------------------------------------- |
 | 프로젝트 목적 | Study SQL                                                              |
@@ -5,6 +7,7 @@
 | docs          |                                                                        |
 | data(sqlite)  | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies_download.db |
 | data(json)    | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies-data.json   |
+| data(postgre  | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/pg_backup          |
 
 ---
 
@@ -1451,14 +1454,12 @@ WHERE
 ## Normalization
 
 - Normalizing `status`
-
   1. statuses 컬럼 생성
   2. 각 status row 생성
   3. movies 테이블에 status_id 컬럼 생성
   4. foreign key 연결
   5. movies 테이블의 status에 따라 status_id 업데이트
   6. movies 테이블의 status 컬럼 삭제
-
   ```sql
   CREATE TABLE statuses (
   	status_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1494,12 +1495,10 @@ WHERE
 
   ALTER TABLE movies DROP COLUMN status;
   ```
-
 - Normalizing `director`
   director 수가 많기 때문에, movie table을 업데이트 하기전에 indexing을 한다
   미리 indexing을 하는것이 아닌 필요할때, 추가한다
   `CREATE INDEX idx_director_name ON directors (name);`
-
   ```sql
   CREATE TABLE directors (
   	director_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1538,9 +1537,7 @@ WHERE
 
   ALTER TABLE movies DROP COLUMN director;
   ```
-
 - Normalizing `original_language`
-
   ```sql
   CREATE TABLE langs (
   	lang_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1576,12 +1573,9 @@ WHERE
 
   ALTER TABLE movies DROP COLUMN original_language;
   ```
-
 - Normalizing `country` (many to many)
-
   - union
-    행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
-
+  행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
   ```sql
   -- Comma 1개
   SELECT
@@ -1632,10 +1626,8 @@ WHERE
   	country;
 
   ```
-
   - ignore
-    오류를 발생시키지 않고 해당 행을 무시
-
+  오류를 발생시키지 않고 해당 행을 무시
   ```sql
   INSERT IGNORE INTO countries (country_code)
   SELECT
@@ -1656,9 +1648,7 @@ WHERE
   GROUP BY
   	country;
   ```
-
   - movies_countries column으로 연결
-
   ```sql
   INSERT INTO movies_countries (movie_id, country_id)
   SELECT
