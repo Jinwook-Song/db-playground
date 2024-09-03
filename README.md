@@ -1454,12 +1454,14 @@ WHERE
 ## Normalization
 
 - Normalizing `status`
+
   1. statuses 컬럼 생성
   2. 각 status row 생성
   3. movies 테이블에 status_id 컬럼 생성
   4. foreign key 연결
   5. movies 테이블의 status에 따라 status_id 업데이트
   6. movies 테이블의 status 컬럼 삭제
+
   ```sql
   CREATE TABLE statuses (
   	status_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1495,10 +1497,12 @@ WHERE
 
   ALTER TABLE movies DROP COLUMN status;
   ```
+
 - Normalizing `director`
   director 수가 많기 때문에, movie table을 업데이트 하기전에 indexing을 한다
   미리 indexing을 하는것이 아닌 필요할때, 추가한다
   `CREATE INDEX idx_director_name ON directors (name);`
+
   ```sql
   CREATE TABLE directors (
   	director_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1537,7 +1541,9 @@ WHERE
 
   ALTER TABLE movies DROP COLUMN director;
   ```
+
 - Normalizing `original_language`
+
   ```sql
   CREATE TABLE langs (
   	lang_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1573,9 +1579,12 @@ WHERE
 
   ALTER TABLE movies DROP COLUMN original_language;
   ```
+
 - Normalizing `country` (many to many)
+
   - union
-  행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
+    행을 결합 (Join이 horizontal 결합이라면, Union은 vertical 결합)
+
   ```sql
   -- Comma 1개
   SELECT
@@ -1626,8 +1635,10 @@ WHERE
   	country;
 
   ```
+
   - ignore
-  오류를 발생시키지 않고 해당 행을 무시
+    오류를 발생시키지 않고 해당 행을 무시
+
   ```sql
   INSERT IGNORE INTO countries (country_code)
   SELECT
@@ -1648,7 +1659,9 @@ WHERE
   GROUP BY
   	country;
   ```
+
   - movies_countries column으로 연결
+
   ```sql
   INSERT INTO movies_countries (movie_id, country_id)
   SELECT
@@ -1887,4 +1900,45 @@ SELECT
 	justify_interval(INTERVAL '312312 hour')
 FROM
 	users;
+```
+
+- Indexing Genres with UNNEST, DISTINCT
+
+배열과 같은 복합 데이터 구조를 단일 열의 여러 행으로 풀어내어 작업할 수 있도록
+
+```sql
+CREATE TABLE genres (
+	genre_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	name VARCHAR(50) UNIQUE,
+	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+INSERT INTO genres (name) SELECT DISTINCT
+	UNNEST(string_to_array(genres, ','))
+FROM
+	movies
+GROUP BY
+	genres;
+
+CREATE TABLE movies_genres (
+	movie_id BIGINT,
+	genre_id BIGINT,
+	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+
+	PRIMARY KEY (movie_id, genre_id),
+	FOREIGN KEY (movie_id) REFERENCES movies (movie_id),
+	FOREIGN KEY (genre_id) REFERENCES genres (genre_id)
+);
+
+INSERT INTO movies_genres (movie_id, genre_id)
+SELECT
+	movies.movie_id,
+	genres.genre_id
+FROM
+	movies
+	JOIN genres ON movies.genres LIKE '%' || genres. "name" || '%';
+
+ALTER TABLE movies DROP COLUMN genres;
 ```
