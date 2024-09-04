@@ -2050,7 +2050,9 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 ```
 
 - procedure
+
   - return 하지 않아도 된다
+
   ```sql
   CREATE OR REPLACE PROCEDURE hello_world(IN name TEXT, OUT greeting TEXT) AS
   $$
@@ -2085,4 +2087,71 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
   LANGUAGE plpgsql;
 
   CALL hello_world_i('jw', 'spanish', NULL);
+  ```
+
+- python extension
+  - install
+  ```sql
+  apt-get update
+  apt-get install postgresql-plpython3-<Postgres 버전>
+
+  psql -U <username> -d <database_name>
+
+  CREATE EXTENSION plpython3u;
+  ```
+  - example
+  python 문법을 따라야 하며, 소문자로 return 해야한다
+  ```sql
+  CREATE FUNCTION hello_world_py(name TEXT)
+  RETURNS TEXT AS
+  $$
+  	def hello(name):
+  		return f'hello {name}'
+  	return hello(name)
+  $$ LANGUAGE plpython3u;
+
+  SELECT hello_world_py('jw');
+  ```
+  - [Trigger, Transition Data(TD)](https://www.postgresql.org/docs/current/plpython-trigger.html)
+  ```sql
+  CREATE OR REPLACE FUNCTION log_user_changes_to_server()
+  RETURNS trigger AS $$
+      import json
+      import requests
+
+      # 서버로 보낼 기본 URL (로그 서버)
+      log_server_url = "https://your-log-server.com/api/logs"
+
+      # 트리거 작업 유형에 따라 로그 데이터 구성
+      if TG_OP == 'UPDATE':
+          log_data = {
+              "operation": "UPDATE",
+              "old_name": OLD['name'],
+              "new_name": NEW['name'],
+              "old_email": OLD['email'],
+              "new_email": NEW['email'],
+          }
+
+      elif TG_OP == 'INSERT':
+          log_data = {
+              "operation": "INSERT",
+              "new_name": NEW['name'],
+              "new_email": NEW['email'],
+          }
+
+      # 로그 데이터를 JSON 형식으로 변환
+      json_data = json.dumps(log_data)
+
+      # 서버로 POST 요청 보내기
+      try:
+          response = requests.post(log_server_url, data=json_data, headers={"Content-Type": "application/json"})
+
+          if response.status_code != 200:
+              plpy.error(f"Failed to send log to server: {response.status_code}, {response.text}")
+
+      except Exception as e:
+          plpy.error(f"Exception occurred while sending log: {str(e)}")
+
+      return NEW
+  $$ LANGUAGE plpython3u;
   ```
