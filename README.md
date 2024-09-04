@@ -1957,9 +1957,11 @@ FROM
 ## Functions and Procedures
 
 - function
+
   - return을 해야한다
   - 인자가 있는것과 없는것을 다른 함수로 구분
   - 인자를 named 또는 positional 인자가 가능하다.
+
   ```sql
   CREATE OR REPLACE FUNCTION hello_world()
   RETURNS text AS $$
@@ -1979,8 +1981,10 @@ FROM
   $$
   LANGUAGE SQL;
   ```
+
   - return types
     - table을 return 할 수 있다
+
   ```sql
   CREATE OR REPLACE FUNCTION is_hit_or_flop(movie movies)
   RETURNS TEXT AS
@@ -2018,3 +2022,8 @@ FROM
   FROM
   	movies;
   ```
+
+- [function volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)
+  - VOLATILE - 함수가 외부 요인에 따라 결과가 달라질 수 있으며, PostgreSQL은 매번 이 함수를 실행합니다. 이 속성은 기본 값이며, 함수가 트랜잭션 상태에 의존하거나, 데이터를 삽입, 삭제, 수정하는 경우 사용
+  - STABLE - 동일한 쿼리 내에서는 결과가 변하지 않지만, 외부 상태(예: 테이블 데이터 변경)에 영향을 받을 수 있는 상황
+  - IMMUTABLE - 항상 같은 input → 같은 output
