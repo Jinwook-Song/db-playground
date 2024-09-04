@@ -1953,3 +1953,68 @@ FROM
 	movies
 	FULL JOIN directors USING (director_id);
 ```
+
+## Functions and Procedures
+
+- function
+  - return을 해야한다
+  - 인자가 있는것과 없는것을 다른 함수로 구분
+  - 인자를 named 또는 positional 인자가 가능하다.
+  ```sql
+  CREATE OR REPLACE FUNCTION hello_world()
+  RETURNS text AS $$
+  	SELECT 'hello postgres';
+  $$
+  LANGUAGE SQL;
+
+  CREATE OR REPLACE FUNCTION hello_world(user_name text)
+  RETURNS text AS $$
+  	SELECT 'hello ' || user_name;
+  $$
+  LANGUAGE SQL;
+
+  CREATE OR REPLACE FUNCTION hello_world(text, text)
+  RETURNS text AS $$
+  	SELECT 'hello ' || $1 || ' and ' || $2;
+  $$
+  LANGUAGE SQL;
+  ```
+  - return types
+    - table을 return 할 수 있다
+  ```sql
+  CREATE OR REPLACE FUNCTION is_hit_or_flop(movie movies)
+  RETURNS TEXT AS
+  $$
+  	SELECT CASE
+  		WHEN movie.revenue > movie.budget THEN 'Hit'
+  		WHEN movie.revenue < movie.budget THEN 'Flop'
+  		ELSE 'N/A'
+  	END
+  $$
+  LANGUAGE SQL;
+
+  SELECT
+  	title,
+  	is_hit_or_flop(movies.*)
+  FROM
+  	movies;
+
+  --
+
+  CREATE OR REPLACE FUNCTION is_hit_or_flop(movie movies)
+  RETURNS TABLE (hit_or_flop text, movie_id NUMERIC) AS
+  $$
+  	SELECT CASE
+  		WHEN movie.revenue > movie.budget THEN 'Hit'
+  		WHEN movie.revenue < movie.budget THEN 'Flop'
+  		ELSE 'N/A'
+  	END, movie.movie_id;
+  $$
+  LANGUAGE SQL;
+
+  SELECT
+  	title,
+  	(is_hit_or_flop(movies.*)).* -- table의 colulmn을 풀어줌
+  FROM
+  	movies;
+  ```
