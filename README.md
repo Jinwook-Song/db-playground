@@ -2024,6 +2024,27 @@ FROM
   ```
 
 - [function volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)
+
   - VOLATILE - 함수가 외부 요인에 따라 결과가 달라질 수 있으며, PostgreSQL은 매번 이 함수를 실행합니다. 이 속성은 기본 값이며, 함수가 트랜잭션 상태에 의존하거나, 데이터를 삽입, 삭제, 수정하는 경우 사용
   - STABLE - 동일한 쿼리 내에서는 결과가 변하지 않지만, 외부 상태(예: 테이블 데이터 변경)에 영향을 받을 수 있는 상황
   - IMMUTABLE - 항상 같은 input → 같은 output
+
+- Trigger
+
+함수에서 trigger를 return 할 수 있다. postgresql에서 on update를 지원하지 않기 때문에 이런방식으로 updated_at을 적용할 수 있다.
+
+```sql
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS
+$$
+	BEGIN
+		NEW.updated_at = CURRENT_TIMESTAMP;
+		RETURN NEW;
+	END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER updated_at
+BEFORE UPDATE ON movies
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+```
