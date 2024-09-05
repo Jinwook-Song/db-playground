@@ -2090,7 +2090,9 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
   ```
 
 - python extension
+
   - install
+
   ```sql
   apt-get update
   apt-get install postgresql-plpython3-<Postgres 버전>
@@ -2099,8 +2101,10 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
   CREATE EXTENSION plpython3u;
   ```
+
   - example
-  python 문법을 따라야 하며, 소문자로 return 해야한다
+    python 문법을 따라야 하며, 소문자로 return 해야한다
+
   ```sql
   CREATE FUNCTION hello_world_py(name TEXT)
   RETURNS TEXT AS
@@ -2112,7 +2116,9 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
   SELECT hello_world_py('jw');
   ```
+
   - [Trigger, Transition Data(TD)](https://www.postgresql.org/docs/current/plpython-trigger.html)
+
   ```sql
   CREATE OR REPLACE FUNCTION log_user_changes_to_server()
   RETURNS trigger AS $$
@@ -2155,3 +2161,47 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
       return NEW
   $$ LANGUAGE plpython3u;
   ```
+
+## Transactions
+
+- 여러 작업을 묶어서 처리할 때, 그 작업들이 모두 성공하거나 모두 실패하게 만들어 데이터의 일관성을 유지
+
+**BEGIN**: 트랜잭션을 시작
+
+**COMMIT**: 트랜잭션이 성공적으로 완료되었을 때, 모든 변경 사항을 데이터베이스에 저장
+
+**ROLLBACK**: 트랜잭션 중간에 오류가 발생했을 때, 트랜잭션 시작 시점으로 돌아가 모든 변경 사항을 취소
+
+```sql
+CREATE TABLE accounts (
+	account_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	account_holder VARCHAR(100) NOT NULL,
+	balance DECIMAL (10, 2) NOT NULL
+);
+
+ALTER TABLE accounts ADD CONSTRAINT chk_balance CHECK (balance > 0);
+
+INSERT INTO accounts (account_holder, balance)
+		VALUES('jw', 2000.00), ('nico', 1000.00);
+
+SELECT * from accounts;
+
+BEGIN;
+	SELECT * FROM accounts;
+
+	UPDATE
+		accounts
+	SET
+		balance = balance + 5000
+	WHERE
+		account_holder = 'jw';
+
+	UPDATE
+		accounts
+	SET
+		balance = balance - 5000
+	WHERE
+		account_holder = 'nico';
+COMMIT;
+
+```
