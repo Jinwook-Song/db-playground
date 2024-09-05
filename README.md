@@ -2207,16 +2207,14 @@ COMMIT;
 ```
 
 - ACID
-
   - Atomicity (원자성): **모두 성공하거나** 또는 **아무 작업도 수행되지 않은 상태로 남는** 것을 보장
   - Consistency (일관성): 데이터베이스는 무결성 제약 조건을 만족하는 상태로 유지
-  - Isolation (격리성): 여러 트랜잭션이 동시에 실행될 때, 각각의 트랜잭션이 다른 트랜잭션의 영향을 받지 않고 독립적으로 실행되는 것을 보장
+  - [Isolation](https://www.postgresql.org/docs/current/transaction-iso.html) (격리성): 여러 트랜잭션이 동시에 실행될 때, 각각의 트랜잭션이 다른 트랜잭션의 영향을 받지 않고 독립적으로 실행되는 것을 보장
     - **Read Uncommitted**: 다른 트랜잭션의 커밋되지 않은 데이터를 읽을 수 있음 (가장 낮은 격리 수준).
     - **Read Committed**: 다른 트랜잭션의 커밋된 데이터만 읽을 수 있음.
     - **Repeatable Read**: 트랜잭션 동안 같은 데이터를 여러 번 읽어도 동일한 결과를 보장
     - **Serializable**: 트랜잭션 간의 완전한 격리를 보장하여, 동시에 실행되는 트랜잭션들이 순차적으로 실행된 것과 같은 결과를 보장함 (가장 높은 격리 수준).
   - Durability (내구성): 내구성은 트랜잭션이 성공적으로 커밋된 후에는 시스템 오류나 장애가 발생하더라도 트랜잭션의 결과가 **영구적으로 저장**된다는 것을 보장
-
 - SAVEPOINT
 
 ```sql
@@ -2244,4 +2242,35 @@ BEGIN;
 	ROLLBACK; -- 모든 변경 사항 폐기
 COMMIT;
 
+```
+
+- Shared lock
+
+데이터베이스에서 **동시에 여러 트랜잭션이 데이터를 읽을 수 있도록 허용 (read only)**
+
+```sql
+-- Transaction A
+BEGIN;
+
+-- 특정 행에 대해 공유 락 설정
+SELECT * FROM accounts WHERE account_holder = 'alice' FOR SHARE;
+
+-- 트랜잭션 A는 이 데이터를 읽을 수 있음
+-- 트랜잭션 B가 배타적 락을 요청하면 대기하게 됨
+
+COMMIT;
+
+-- Transaction B
+BEGIN;
+
+-- 이 트랜잭션은 해당 데이터의 수정이 필요하여 배타적 락을 요청함
+UPDATE accounts SET balance = balance + 500 WHERE account_holder = 'alice';
+
+-- 트랜잭션 A가 공유 락을 해제할 때까지 대기
+
+COMMIT;
+
+--	1.	트랜잭션 A는 FOR SHARE를 사용하여 'alice'의 accounts 행에 대해 공유 락을 설정합니다. 이때, 트랜잭션 A는 데이터를 읽을 수 있지만 수정은 할 수 없습니다.
+--	2.	트랜잭션 B는 같은 행을 수정하려고 하지만, 배타적 락을 요청하므로 트랜잭션 A의 공유 락이 해제될 때까지 대기합니다.
+--	3.	트랜잭션 A가 커밋하거나 롤백하여 공유 락을 해제하면, 트랜잭션 B가 수정 작업을 수행할 수 있습니다.
 ```
