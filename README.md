@@ -2278,3 +2278,24 @@ COMMIT;
 - Exclusive lock (for update)
 
 **하나의 트랜잭션만이 데이터를 수정할 수 있도록** 배타적 잠금을 설정하여 다른 트랜잭션의 읽기/쓰기를 차단
+
+## Data Control Langugae (DCL)
+
+```sql
+-- 새로운 사용자 정의
+CREATE ROLE marketer WITH login PASSWORD 'marketer';
+
+-- (SELECT) 권한 부여
+GRANT SELECT ON movies TO marketer;
+
+-- 테이블에 설정된 권한 확인
+SELECT grantee, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_name = 'movies';
+
+-- 권한 철회
+REVOKE SELECT, INSERT ON movies FROM marketer;
+
+-- 모든 테이블에 대한 SELECT 권한 부여
+GRANT SELECT ON ALL TABLES IN SCHEMA PUBLIC TO marketer;
+```
