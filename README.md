@@ -2207,6 +2207,7 @@ COMMIT;
 ```
 
 - ACID
+
   - Atomicity (원자성): **모두 성공하거나** 또는 **아무 작업도 수행되지 않은 상태로 남는** 것을 보장
   - Consistency (일관성): 데이터베이스는 무결성 제약 조건을 만족하는 상태로 유지
   - Isolation (격리성): 여러 트랜잭션이 동시에 실행될 때, 각각의 트랜잭션이 다른 트랜잭션의 영향을 받지 않고 독립적으로 실행되는 것을 보장
@@ -2215,3 +2216,32 @@ COMMIT;
     - **Repeatable Read**: 트랜잭션 동안 같은 데이터를 여러 번 읽어도 동일한 결과를 보장
     - **Serializable**: 트랜잭션 간의 완전한 격리를 보장하여, 동시에 실행되는 트랜잭션들이 순차적으로 실행된 것과 같은 결과를 보장함 (가장 높은 격리 수준).
   - Durability (내구성): 내구성은 트랜잭션이 성공적으로 커밋된 후에는 시스템 오류나 장애가 발생하더라도 트랜잭션의 결과가 **영구적으로 저장**된다는 것을 보장
+
+- SAVEPOINT
+
+```sql
+BEGIN;
+	UPDATE
+		accounts
+	SET
+		balance = balance + 5000
+	WHERE
+		account_holder = 'jw';
+
+	SAVEPOINT transfer_one;
+
+	SELECT * FROM accounts;
+
+	UPDATE
+		accounts
+	SET
+		balance = balance - 5000
+	WHERE
+		account_holder = 'nico';
+
+	ROLLBACK TO SAVEPOINT transfer_one; -- transfer_one 이후의 변경 사항 폐기
+
+	ROLLBACK; -- 모든 변경 사항 폐기
+COMMIT;
+
+```
