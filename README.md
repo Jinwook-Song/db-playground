@@ -2281,6 +2281,8 @@ COMMIT;
 
 ## Data Control Langugae (DCL)
 
+- Users
+
 ```sql
 -- 새로운 사용자 정의
 CREATE ROLE marketer WITH login PASSWORD 'marketer';
@@ -2298,4 +2300,26 @@ REVOKE SELECT, INSERT ON movies FROM marketer;
 
 -- 모든 테이블에 대한 SELECT 권한 부여
 GRANT SELECT ON ALL TABLES IN SCHEMA PUBLIC TO marketer;
+```
+
+- [Roles](https://www.postgresql.org/docs/current/sql-createrole.html)
+  role을 정의하고 유저에게 role을 부여할 수 있다.
+
+```sql
+CREATE ROLE editor;
+
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA PUBLIC to editor;
+
+CREATE USER editor_one WITH PASSWORD 'editor_one';
+
+GRANT editor TO editor_one;
+
+REVOKE ALL on movies FROM editor;
+
+-- 특정 column에 대한 권한
+GRANT SELECT (title) ON movies TO editor;
+
+-- 동시에 열 수 있는 연결 수 제한
+ALTER ROLE editor_one WITH CONNECTION LIMIT 1;
+
 ```
