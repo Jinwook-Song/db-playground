@@ -2502,3 +2502,15 @@ db.createCollection('movies') # 컬렉션 생성
 db.movies.insertOne({ field1: "value1", field2: "value2" })
 db.movies.insertMany([{ name: "Jane", age: 25 }, { name: "Bob", age: 40 }])
 ```
+
+- [query](https://www.mongodb.com/ko-kr/docs/manual/reference/operator/query/)
+
+```bash
+db.movies.find().sort({rating:-1, title: 1}).limit(10).skip(10)
+
+# genres의 수가 3보다 작은 영화에 Other, Happy 추가하기
+db.movies.updateMany(
+{ $expr: { $lt: [{$size: "$genres"}, 3]}},
+{ $addToSet: { genres: { $each: ["Other", "Happy"]}}}
+)
+```
