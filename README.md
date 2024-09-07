@@ -2443,6 +2443,7 @@ SET
   `CREATE EXTENSION pgcrypto;`
   저장시에 salt도 함께 저장되기때문에 비교할때 salt를 따로 넣어줄 필요 없다.
   따라서 매번 salt를 랜덤하게 지정해도 괜찮다
+
   ```sql
   CREATE TABLE users (
   	user_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -2457,4 +2458,19 @@ SET
 
   SELECT crypt('my_password', gen_salt('bf'));
 
+  ```
+
+- [uuid-ossp](https://www.postgresql.org/docs/current/uuid-ossp.html)
+  `CREATE EXTENSION "uuid-ossp";`
+  ```sql
+  CREATE TABLE users (
+  	user_id UUID PRIMARY KEY DEFAULT(uuid_generate_v4()),
+  	username VARCHAR(100),
+  	password VARCHAR(100)
+  );
+
+  INSERT INTO users (username, password) VALUES
+  ('jw', '1234');
+
+  SELECT * FROM users;
   ```
