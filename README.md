@@ -2393,3 +2393,47 @@ SET
 	profile = profile || jsonb_set(profile, '{hobbies}', (profile -> 'hobbies') || jsonb_build_array('cooking'));
 
 ```
+
+## [Postgresql extensions](https://www.postgresql.org/docs/current/contrib.html)
+
+`SELECT * from pg_available_extensions;`
+
+`SELECT * from pg_extension;`
+
+- [HSTORE](https://www.postgresql.org/docs/current/hstore.html)
+  key, value의 데이터
+  `CREATE EXTENSION hstore;`
+  ```sql
+  CREATE TABLE users (
+  	user_id BIGINT PRIMARY KEY GENERATED ALWAYS as IDENTITY,
+  	prefs HSTORE
+  );
+
+  INSERT INTO users (prefs) VALUES
+  ('theme => dark, lang => kr, notifications => off'),
+  ('theme => light, lang => es, notifications => on, push_notifications => on, email_notifications => off'),
+  ('theme => dark, lang => it, start_page => dashboard, font_size => large');
+
+  SELECT
+  	user_id,
+  	prefs -> 'theme',
+  	prefs -> ARRAY['lang', 'notifications'],
+  	prefs ? 'font_size' as has_fontt_size,
+  	prefs ?| ARRAY['push_notifications', 'start_page'],
+  	akeys(prefs),
+  	avals(prefs),
+  	each(prefs)
+  FROM
+  	users;
+
+  UPDATE users SET prefs['theme'] = 'light' WHERE user_id = 2;
+
+  UPDATE users SET
+  	prefs = prefs || hstore(
+  		ARRAY['currency', 'cookies_ok'],
+  		ARRAY['krw', 'ok']
+  		);
+
+  UPDATE users SET
+  	prefs = DELETE(prefs, 'cookies_ok');
+  ```
