@@ -2369,3 +2369,27 @@ WHERE
 	profile -> 'hobbies' ?| array['reading', 'traveling'];
 
 ```
+
+- processing
+
+json 데이터의 특정 key의 값을 수정할 수 있다.
+
+```sql
+UPDATE users
+SET profile = profile || jsonb_build_object('email', 'x@xx.com');
+
+UPDATE users
+SET profile = profile - 'email'
+WHERE profile ->> 'name' = 'Giga';
+
+UPDATE
+	users
+SET
+	profile = profile || jsonb_set(profile, '{hobbies}', (profile -> 'hobbies') - 'reading');
+
+UPDATE
+	users
+SET
+	profile = profile || jsonb_set(profile, '{hobbies}', (profile -> 'hobbies') || jsonb_build_array('cooking'));
+
+```
