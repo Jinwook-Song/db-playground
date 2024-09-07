@@ -2462,6 +2462,7 @@ SET
 
 - [uuid-ossp](https://www.postgresql.org/docs/current/uuid-ossp.html)
   `CREATE EXTENSION "uuid-ossp";`
+
   ```sql
   CREATE TABLE users (
   	user_id UUID PRIMARY KEY DEFAULT(uuid_generate_v4()),
@@ -2474,3 +2475,30 @@ SET
 
   SELECT * FROM users;
   ```
+
+## MongoDB
+
+- install
+
+```bash
+docker pull mongo
+docker run -d -p 27017:27017 --name mongodb mongo
+docker exec -it mongodb bash
+mongosh
+
+# GUI Tool
+brew install --cask mongodb-compass
+```
+
+- 기본 명령어
+
+```bash
+show dbs # db 목록
+use movies # 데이터베이스 선택(없으면 새로 생성됨)
+
+show collections # db에 있는 collection 목록
+db.createCollection('movies') # 컬렉션 생성
+
+db.movies.insertOne({ field1: "value1", field2: "value2" })
+db.movies.insertMany([{ name: "Jane", age: 25 }, { name: "Bob", age: 40 }])
+```
