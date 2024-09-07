@@ -2403,6 +2403,7 @@ SET
 - [HSTORE](https://www.postgresql.org/docs/current/hstore.html)
   key, value의 데이터
   `CREATE EXTENSION hstore;`
+
   ```sql
   CREATE TABLE users (
   	user_id BIGINT PRIMARY KEY GENERATED ALWAYS as IDENTITY,
@@ -2436,4 +2437,24 @@ SET
 
   UPDATE users SET
   	prefs = DELETE(prefs, 'cookies_ok');
+  ```
+
+- [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html)
+  `CREATE EXTENSION pgcrypto;`
+  저장시에 salt도 함께 저장되기때문에 비교할때 salt를 따로 넣어줄 필요 없다.
+  따라서 매번 salt를 랜덤하게 지정해도 괜찮다
+  ```sql
+  CREATE TABLE users (
+  	user_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  	username VARCHAR(100),
+  	password VARCHAR(100)
+  );
+
+  INSERT INTO users (username, PASSWORD)
+  		VALUES('jw', crypt('1234', gen_salt('bf')));
+
+  SELECT username from users WHERE password = crypt('1234', password);
+
+  SELECT crypt('my_password', gen_salt('bf'));
+
   ```
