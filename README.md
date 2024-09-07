@@ -2323,3 +2323,49 @@ GRANT SELECT (title) ON movies TO editor;
 ALTER ROLE editor_one WITH CONNECTION LIMIT 1;
 
 ```
+
+## [Json, Jsonb](https://www.postgresql.org/docs/9.5/functions-json.html)
+
+json_build_object, json_build_array
+
+```sql
+CREATE TABLE users (
+	user_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	profile json
+);
+
+INSERT INTO users (profile)
+		VALUES
+	(json_build_object('name', 'Taco', 'age', 30, 'city', 'seoul')),
+	(json_build_object('name', 'Giga', 'age', 28, 'city', 'paris', 'hobbies', json_build_array('reading', 'coding')));
+
+SELECT * FROM users;
+```
+
+->>는 **텍스트 값**으로 반환하고, ->는 **JSON 객체** 그대로 반환
+
+- querying
+
+```sql
+SELECT
+    profile ->> 'name' AS name,  -- profile JSON에서 'name' 값을 텍스트로 추출
+    profile -> 'age' AS age      -- profile JSON에서 'age' 값을 JSON 객체로 추출
+FROM
+    users
+WHERE
+    profile::jsonb ? 'hobbies';  -- profile JSON을 JSONB로 변환 후 'hobbies' 키 존재 여부 확인
+```
+
+```sql
+SELECT
+	profile ->> 'name' name,
+	profile -> 'age' age,
+	jsonb_array_length(profile -> 'hobbies')
+FROM
+	users
+WHERE
+-- 	profile ->> 'name' = 'Taco' AND
+	(profile ->> 'age')::INTEGER < 50 AND
+	profile -> 'hobbies' ?| array['reading', 'traveling'];
+
+```
