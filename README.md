@@ -2514,3 +2514,86 @@ db.movies.updateMany(
 { $addToSet: { genres: { $each: ["Other", "Happy"]}}}
 )
 ```
+
+- [aggregate](https://www.mongodb.com/ko-kr/docs/manual/aggregation/)
+
+SQL의 GROUP BY나 JOIN, HAVING과 같은 기능을 대체하는 방법으로, 여러 스테이지로 나뉘어 처리됩니다. 각 스테이지는 특정한 작업을 수행하며, 각 스테이지의 출력이 다음 스테이지의 입력
+
+```bash
+db.collection_name.aggregate([
+  { <stage1> },
+  { <stage2> },
+  ...
+  { <stageN> }
+])
+
+#	1.	특정 날짜 이후의 판매만 선택 ($match).
+#	2.	상품별로 그룹화하고 총 판매량을 계산 ($group).
+#	3.	판매량이 많은 순서대로 정렬 ($sort).
+#	4.	상위 5개의 결과만 반환 ($limit).
+db.sales.aggregate([
+  { $match: { date: { $gte: new ISODate("2023-01-01") } } },
+  { $group: { _id: "$product", totalSales: { $sum: "$amount" } } },
+  { $sort: { totalSales: -1 } },
+  { $limit: 5 }
+])
+
+# 평균 평점
+db.movies.aggregate([
+  {$group: {_id: null, avgRating: {$avg: "$rating"}}}
+])
+
+# unwind(UNNEST), genre로 집계하고 내림차순
+db.movies.aggregate([
+  {$unwind: "$genres"},
+  {$group:
+  	{_id: "$genres",
+		count: {$sum: 1}},
+	},
+  {$sort: {count: -1}}
+])
+
+db.movies.aggregate([
+  {$group: {
+		_id: null,
+		oldestMovie: {$min: "$year"},
+		newestMovie: {$max: "$year"}
+	}}
+])
+
+# 연도별 평균 runtime
+db.movies.aggregate([
+  {$group: {
+		_id: "$year",
+		avg: {$avg: "$runtime"}
+	}},
+  {$sort: {_id: -1}}
+])
+
+# 감독별 다작 순위
+db.movies.aggregate([
+  {$match: {director: {$exists: true}}},
+  {$group: {
+		_id: "$director",
+		movieCount: {$sum: 1}
+	}},
+  {$sort: {movieCount: -1}}
+])
+
+# 배우별 영화 출연 순위
+db.movies.aggregate([
+  {$unwind: "$cast"},
+  {$group: {
+		_id: "$cast",
+		movieCount: {$sum: 1}
+	}},
+  {$sort: {movieCount: -1}}
+])
+
+# title, cast만 표기
+db.movies.aggregate([
+  {$project:
+    {title: 1, cast: 1, _id: 0}
+	}
+])
+```
