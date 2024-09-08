@@ -2675,3 +2675,14 @@ HSET user:1000 name "John" age "30"
 HGET user:1000 name  # 결과: "John"
 HGETALL user:1000    # 결과: {"name": "John", "age": "30"}
 ```
+
+- Sorted Sets
+
+```bash
+ZADD scores 1 user:1 2 user:2 10 user:3 6 user:4
+ZRANGE scores 0 -1
+ZREVRANGE scores 0 -1
+
+ZRANK scores user:1
+ZINCBY scores 1 users:2
+```
