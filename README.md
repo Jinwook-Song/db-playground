@@ -1,13 +1,14 @@
 # Database
 
-| 프로젝트 기간 | 24.08.23 ~                                                             |
-| ------------- | ---------------------------------------------------------------------- |
-| 프로젝트 목적 | Study SQL                                                              |
-| Github        | https://github.com/Jinwook-Song/db-playground                          |
-| docs          |                                                                        |
-| data(sqlite)  | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies_download.db |
-| data(json)    | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies-data.json   |
-| data(postgre  | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/pg_backup          |
+| 프로젝트 기간  | 24.08.23 ~                                                              |
+| -------------- | ----------------------------------------------------------------------- |
+| 프로젝트 목적  | Study SQL                                                               |
+| Github         | https://github.com/Jinwook-Song/db-playground                           |
+| docs           |                                                                         |
+| data(sqlite)   | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies_download.db  |
+| data(json)     | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/movies-data.json    |
+| data(postgres) | https://pub-f13217639d6446309ebabc652f18d0ad.r2.dev/pg_backup           |
+| data(mongo)    | https://gist.github.com/serranoarevalo/46661ff5960f3f76e26b5428fee9f325 |
 
 ---
 
@@ -1943,16 +1944,16 @@ FROM
 ALTER TABLE movies DROP COLUMN genres;
 ```
 
-left, right의 조합 (mysql에서는 미지원)
-
-```sql
-SELECT
-	movies.title,
-	directors. "name"
-FROM
-	movies
-	FULL JOIN directors USING (director_id);
-```
+- Full Outer Join
+  left, right의 조합 (mysql에서는 미지원)
+  ```sql
+  SELECT
+  	movies.title,
+  	directors. "name"
+  FROM
+  	movies
+  	FULL JOIN directors USING (director_id);
+  ```
 
 ## Functions and Procedures
 
@@ -2023,31 +2024,28 @@ FROM
   	movies;
   ```
 
-- [function volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)
+  - [function volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)
+    - VOLATILE - 함수가 외부 요인에 따라 결과가 달라질 수 있으며, PostgreSQL은 매번 이 함수를 실행합니다. 이 속성은 기본 값이며, 함수가 트랜잭션 상태에 의존하거나, 데이터를 삽입, 삭제, 수정하는 경우 사용
+    - STABLE - 동일한 쿼리 내에서는 결과가 변하지 않지만, 외부 상태(예: 테이블 데이터 변경)에 영향을 받을 수 있는 상황
+    - IMMUTABLE - 항상 같은 input → 같은 output
+  - Trigger
+    함수에서 trigger를 return 할 수 있다. postgresql에서 on update를 지원하지 않기 때문에 이런방식으로 updated_at을 적용할 수 있다.
 
-  - VOLATILE - 함수가 외부 요인에 따라 결과가 달라질 수 있으며, PostgreSQL은 매번 이 함수를 실행합니다. 이 속성은 기본 값이며, 함수가 트랜잭션 상태에 의존하거나, 데이터를 삽입, 삭제, 수정하는 경우 사용
-  - STABLE - 동일한 쿼리 내에서는 결과가 변하지 않지만, 외부 상태(예: 테이블 데이터 변경)에 영향을 받을 수 있는 상황
-  - IMMUTABLE - 항상 같은 input → 같은 output
+  ```sql
+  CREATE OR REPLACE FUNCTION set_updated_at()
+  RETURNS TRIGGER AS
+  $$
+  	BEGIN
+  		NEW.updated_at = CURRENT_TIMESTAMP;
+  		RETURN NEW;
+  	END;
+  $$
+  LANGUAGE plpgsql;
 
-- Trigger
-
-함수에서 trigger를 return 할 수 있다. postgresql에서 on update를 지원하지 않기 때문에 이런방식으로 updated_at을 적용할 수 있다.
-
-```sql
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS TRIGGER AS
-$$
-	BEGIN
-		NEW.updated_at = CURRENT_TIMESTAMP;
-		RETURN NEW;
-	END;
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER updated_at
-BEFORE UPDATE ON movies
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-```
+  CREATE TRIGGER updated_at
+  BEFORE UPDATE ON movies
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+  ```
 
 - procedure
 
@@ -2596,4 +2594,15 @@ db.movies.aggregate([
     {title: 1, cast: 1, _id: 0}
 	}
 ])
+```
+
+## Redis
+
+- install
+
+```bash
+docker pull redis
+docker run -d --name redis-server -p 6379:6379 redis
+docker exec -it redis-server bash
+redis-cli
 ```
