@@ -2667,3 +2667,11 @@ SINTER votes:song:1 votes:song:2 # 교차
 SDIFF
 SUNION
 ```
+
+- Hashes(dictionary)
+
+```bash
+HSET user:1000 name "John" age "30"
+HGET user:1000 name  # 결과: "John"
+HGETALL user:1000    # 결과: {"name": "John", "age": "30"}
+```
