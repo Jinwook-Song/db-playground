@@ -2637,3 +2637,13 @@ INCR likes # 2
 DECR likes # 1
 INCRBY likes 10 # 11
 ```
+
+- Lists
+
+```bash
+LPUSH mylist "one"
+LPUSH mylist "two"
+RPUSH mylist "three"
+LRANGE mylist 0 -1  # 결과: ["two", "one", "three"]
+LPOP mylist         # 결과: "two"
+```
