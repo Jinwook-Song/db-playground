@@ -2647,3 +2647,23 @@ RPUSH mylist "three"
 LRANGE mylist 0 -1  # 결과: ["two", "one", "three"]
 LPOP mylist         # 결과: "two"
 ```
+
+- Sets (중복 X)
+
+```bash
+SADD myset "apple"
+SADD myset "banana"
+SADD myset "orange"
+SMEMBERS myset  # 결과: ["apple", "banana", "orange"]
+SREM myset "banana"
+
+SADD votes:song:1 user:1
+SADD votes:song:1 user:2
+SADD votes:song:1 user:2 # 이미 투표함
+SISMEMBER votes:song:1 user:1 # 투표했는지 확인
+SCARD votes:song:1 # 획득한 표
+SADD votes:song:2 user:3 user:4 user:5 # user3,4,5가 투표
+SINTER votes:song:1 votes:song:2 # 교차
+SDIFF
+SUNION
+```
