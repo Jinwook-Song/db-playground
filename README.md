@@ -2606,3 +2606,34 @@ docker run -d --name redis-server -p 6379:6379 redis
 docker exec -it redis-server bash
 redis-cli
 ```
+
+- Strings
+
+```bash
+SET hello world
+GET hello
+
+SET users:1 jw
+GET users:1
+
+DEL hello users:1
+
+FLUSHALL # Clean memory
+
+# 특정 패턴에 맞는 키만 조회
+KEYS users:*
+
+# NX(키가 존재하지 않을떄), EX 10(10초 후 만료)
+SET users:1 jw NX EX 10
+
+# multiple
+MSET users:1 jw users:2 nico
+MGET users:1 users:2
+
+# count
+SET likes 0
+INCR likes # 1
+INCR likes # 2
+DECR likes # 1
+INCRBY likes 10 # 11
+```
