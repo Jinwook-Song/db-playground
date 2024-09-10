@@ -2748,3 +2748,30 @@ def change_password_secure(username, password):
 
 change_password_secure("jw", "sql inject' --")
 ```
+
+- Placeholders
+
+`cur.executemany`
+
+```python
+data = [
+    ("admin", "admin123"),
+    ("test", "test123"),
+    ("guest", "guest123"),
+]
+
+cur.executemany("INSERT INTO users (username, password) VALUES (?,?);", data)
+
+data = [
+    {"username": "dict1", "password": "dict123"},
+    {"username": "dict2", "password": "dict234"},
+    {"username": "dict3", "password": "dict345"},
+]
+
+cur.executemany(
+    """INSERT INTO users (username, password)
+    VALUES (:username, :password);""",
+    data,
+)
+
+```
