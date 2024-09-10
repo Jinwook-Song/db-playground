@@ -1,4 +1,6 @@
 import redis
+import sqlite3
+import json
 
 r = redis.Redis(
     host="localhost",
@@ -6,16 +8,32 @@ r = redis.Redis(
     decode_responses=True,
 )
 
-r.set("hello", "world")
+conn = sqlite3.connect("movies_download_origin.db")
+cur = conn.cursor()
 
-print(r.get("hello"))
 
-r.hset(
-    "users:1",
-    mapping={
-        "name": "jw",
-        "age": 31,
-    },
-)
+def make_expensive_query():
+    redis_key = "director:movies"
+    cached_results = r.get(redis_key)
+    if cached_results:
+        print("✅ cache hit")
+        return json.loads(cached_results)
+    else:
+        print("⏳ cache miss")
+        res = cur.execute(
+            """
+        SELECT count(*), director
+        FROM movies
+        GROUP BY director;
+        """
+        )
+        all_rows = res.fetchall()
+        r.set(redis_key, json.dumps(all_rows), ex=20)
+        return all_rows
 
-print(r.hgetall("users:1"))
+
+v = make_expensive_query()
+
+conn.commit()
+conn.close()
+r.close()
