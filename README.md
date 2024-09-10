@@ -2795,3 +2795,30 @@ rest = res.fetchall()
 - [**Python Database API Specification v2.0**](https://peps.python.org/pep-0249/)
   해당 api spec을 mysql과 postgresql에서 모두 구현해둠
   동일한 코드를 사용할 수 있다
+
+- Redis Caching
+  `pip install "redis[hiredis]"`
+      ```python
+      import redis
+
+      r = redis.Redis(
+          host="localhost",
+          port=6379,
+          decode_responses=True,
+      )
+
+      r.set("hello", "world")
+
+      print(r.get("hello"))
+
+      r.hset(
+          "users:1",
+          mapping={
+              "name": "jw",
+              "age": 31,
+          },
+      )
+
+      print(r.hgetall("users:1"))
+
+      ```
