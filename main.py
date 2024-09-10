@@ -29,7 +29,29 @@ def print_all_users():
     print(data)
 
 
-init_table()
+def change_password(username, password):
+    cur.execute(
+        f"""UPDATE users SET
+        password = '{password}WHERE username = '{username};"""
+    )
+
+
+# SQL Injdection
+change_password("jw", "hacked' --")
+
+
+def change_password_secure(username, password):
+    cur.execute(
+        """UPDATE users SET
+        password =? WHERE username =?;""",
+        (password, username),
+    )
+
+
+change_password_secure("jw", "sql inject' --")
+
+
+# init_table()
 conn.commit()
 print_all_users()
 conn.close()
