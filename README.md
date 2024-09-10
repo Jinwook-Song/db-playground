@@ -2791,3 +2791,7 @@ rest = res.fetchall()
 # cursor: end
 
 ```
+
+- [**Python Database API Specification v2.0**](https://peps.python.org/pep-0249/)
+  해당 api spec을 mysql과 postgresql에서 모두 구현해둠
+  동일한 코드를 사용할 수 있다
