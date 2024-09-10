@@ -2775,3 +2775,19 @@ cur.executemany(
 )
 
 ```
+
+- Querying
+  fetchAll, fetchmany, fetchone - cursor의 동작을 이해해야 한다
+
+```python
+res = cur.execute("select movie_id, title from movies order by movie_id")
+
+# cursor: 0
+first_20 = res.fetchmany(20)
+# cursor: 20
+movie_21 = (res.fetchone(),)
+# cursor: 21
+rest = res.fetchall()
+# cursor: end
+
+```
