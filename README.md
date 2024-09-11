@@ -2898,11 +2898,8 @@ rest = res.fetchall()
 `bun add -D drizzle-kit`
 
 - SQL(sqlite, mysql, postgres)
-
   - 이미 존재하는 db에 대해 생성하는 경우
-
     - drizzle.config.ts
-
     ```tsx
     import { defineConfig } from 'drizzle-kit';
 
@@ -2913,11 +2910,8 @@ rest = res.fetchall()
       dbCredentials: { url: './movies_download.db' },
     });
     ```
-
     `bunx drizzle-kit introspect` (이미 존재하는 db를 연결하는 경우)
-
     - index.ts
-
     ```tsx
     import { Database } from 'bun:sqlite';
     import { drizzle } from 'drizzle-orm/bun-sqlite';
@@ -2931,11 +2925,8 @@ rest = res.fetchall()
 
     console.log(results);
     ```
-
   - 처음부터 db 생성
-
     - drizzle.config.ts
-
     ```tsx
     import { defineConfig } from 'drizzle-kit';
 
@@ -2946,9 +2937,7 @@ rest = res.fetchall()
       dbCredentials: { url: './users.db' },
     });
     ```
-
     - schema.ts (v1)
-
     ```tsx
     import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
@@ -2971,12 +2960,9 @@ rest = res.fetchall()
         }),
     });
     ```
-
     `bunx drizzle-kit generate` — sql migration file 생성
     `bunx drizzle-kit migrate` — migrate
-
     - schema.ts (v2) — users table 수정
-
     ```tsx
     export const users = sqliteTable('users', {
       userId: integer('user_id', { mode: 'number' }).primaryKey({
@@ -2988,12 +2974,9 @@ rest = res.fetchall()
         .default(false),
     });
     ```
-
     `bunx drizzle-kit generate`
     `bunx drizzle-kit migrate`
-
     - usage
-
     ```tsx
     import { Database } from 'bun:sqlite';
     import { drizzle } from 'drizzle-orm/bun-sqlite';
@@ -3028,7 +3011,6 @@ rest = res.fetchall()
 
     console.log(result);
     ```
-
 - Redis
 
 `bun add redis`
@@ -3058,4 +3040,38 @@ const r2 = await client.hGetAll('users:1');
 console.log(r2);
 
 await client.disconnect();
+```
+
+- mongoose
+
+`bun add mongoose`
+
+```tsx
+import * as mongoose from 'mongoose';
+
+await mongoose.connect('mongodb://localhost:27017/movies');
+
+const moviesSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  director: { type: String, required: true },
+  rating: {
+    type: Number,
+    required: true,
+    min: [1, 'No movie deserves less than 1'],
+    max: [10, 'No movie is better than 10'],
+  },
+});
+
+const Movie = mongoose.model('Movie', moviesSchema);
+
+// const movie = await Movie.create({
+//   title: 'Mongoose',
+//   rating: 40.5,
+// });
+
+const movies = await Movie.find({ director: 'Christopher Nolan' });
+
+console.log(movies);
+
+await mongoose.disconnect();
 ```
