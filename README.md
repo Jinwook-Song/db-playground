@@ -2897,130 +2897,165 @@ rest = res.fetchall()
 
 `bun add -D drizzle-kit`
 
-- 이미 존재하는 db에 대해 생성하는 경우
+- SQL(sqlite, mysql, postgres)
 
-  - drizzle.config.ts
+  - 이미 존재하는 db에 대해 생성하는 경우
 
-  ```tsx
-  import { defineConfig } from 'drizzle-kit';
+    - drizzle.config.ts
 
-  export default defineConfig({
-    dialect: 'sqlite',
-    schema: './drizzle/schema.ts',
-    out: './drizzle',
-    dbCredentials: { url: './movies_download.db' },
-  });
-  ```
+    ```tsx
+    import { defineConfig } from 'drizzle-kit';
 
-  `bunx drizzle-kit introspect` (이미 존재하는 db를 연결하는 경우)
+    export default defineConfig({
+      dialect: 'sqlite',
+      schema: './drizzle/schema.ts',
+      out: './drizzle',
+      dbCredentials: { url: './movies_download.db' },
+    });
+    ```
 
-  - index.ts
+    `bunx drizzle-kit introspect` (이미 존재하는 db를 연결하는 경우)
 
-  ```tsx
-  import { Database } from 'bun:sqlite';
-  import { drizzle } from 'drizzle-orm/bun-sqlite';
-  import { movies } from './drizzle/schema';
+    - index.ts
 
-  const sqlite = new Database('movies_download.db'); // adapter
+    ```tsx
+    import { Database } from 'bun:sqlite';
+    import { drizzle } from 'drizzle-orm/bun-sqlite';
+    import { movies } from './drizzle/schema';
 
-  const db = drizzle(sqlite);
+    const sqlite = new Database('movies_download.db'); // adapter
 
-  const results = await db.select().from(movies).limit(50);
+    const db = drizzle(sqlite);
 
-  console.log(results);
-  ```
+    const results = await db.select().from(movies).limit(50);
 
-- 처음부터 db 생성
+    console.log(results);
+    ```
 
-  - drizzle.config.ts
+  - 처음부터 db 생성
 
-  ```tsx
-  import { defineConfig } from 'drizzle-kit';
+    - drizzle.config.ts
 
-  export default defineConfig({
-    dialect: 'sqlite',
-    schema: './schema.ts',
-    out: './drizzle',
-    dbCredentials: { url: './users.db' },
-  });
-  ```
+    ```tsx
+    import { defineConfig } from 'drizzle-kit';
 
-  - schema.ts (v1)
+    export default defineConfig({
+      dialect: 'sqlite',
+      schema: './schema.ts',
+      out: './drizzle',
+      dbCredentials: { url: './users.db' },
+    });
+    ```
 
-  ```tsx
-  import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+    - schema.ts (v1)
 
-  export const users = sqliteTable('users', {
-    userId: integer('user_id', { mode: 'number' }).primaryKey({
-      autoIncrement: true,
-    }),
-    username: text('username').notNull(),
-  });
+    ```tsx
+    import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-  export const comments = sqliteTable('comments', {
-    commentId: integer('comment_id', { mode: 'number' }).primaryKey({
-      autoIncrement: true,
-    }),
-    payload: text('payload').notNull(),
-    userId: integer('user_id')
-      .notNull()
-      .references(() => users.userId, {
-        onDelete: 'cascade',
+    export const users = sqliteTable('users', {
+      userId: integer('user_id', { mode: 'number' }).primaryKey({
+        autoIncrement: true,
       }),
-  });
-  ```
+      username: text('username').notNull(),
+    });
 
-  `bunx drizzle-kit generate` — sql migration file 생성
-  `bunx drizzle-kit migrate` — migrate
+    export const comments = sqliteTable('comments', {
+      commentId: integer('comment_id', { mode: 'number' }).primaryKey({
+        autoIncrement: true,
+      }),
+      payload: text('payload').notNull(),
+      userId: integer('user_id')
+        .notNull()
+        .references(() => users.userId, {
+          onDelete: 'cascade',
+        }),
+    });
+    ```
 
-  - schema.ts (v2) — users table 수정
+    `bunx drizzle-kit generate` — sql migration file 생성
+    `bunx drizzle-kit migrate` — migrate
 
-  ```tsx
-  export const users = sqliteTable('users', {
-    userId: integer('user_id', { mode: 'number' }).primaryKey({
-      autoIncrement: true,
-    }),
-    username: text('username').notNull(),
-    isAdmin: integer('is_admin', { mode: 'boolean' }).notNull().default(false),
-  });
-  ```
+    - schema.ts (v2) — users table 수정
 
-  `bunx drizzle-kit generate`
-  `bunx drizzle-kit migrate`
+    ```tsx
+    export const users = sqliteTable('users', {
+      userId: integer('user_id', { mode: 'number' }).primaryKey({
+        autoIncrement: true,
+      }),
+      username: text('username').notNull(),
+      isAdmin: integer('is_admin', { mode: 'boolean' })
+        .notNull()
+        .default(false),
+    });
+    ```
 
-  - usage
+    `bunx drizzle-kit generate`
+    `bunx drizzle-kit migrate`
 
-  ```tsx
-  import { Database } from 'bun:sqlite';
-  import { drizzle } from 'drizzle-orm/bun-sqlite';
-  import { comments, users } from './schema';
-  import { eq } from 'drizzle-orm';
+    - usage
 
-  const sqlite = new Database('users.db');
+    ```tsx
+    import { Database } from 'bun:sqlite';
+    import { drizzle } from 'drizzle-orm/bun-sqlite';
+    import { comments, users } from './schema';
+    import { eq } from 'drizzle-orm';
 
-  const db = drizzle(sqlite, { logger: true });
+    const sqlite = new Database('users.db');
 
-  // const result = await db.insert(users).values({ username: 'jw' }).returning();
-  // const result = await db
-  //   .update(users)
-  //   .set({ isAdmin: true })
-  //   .where(eq(users.userId, 1))
-  //   .returning();
+    const db = drizzle(sqlite, { logger: true });
 
-  // const comment = await db
-  //   .insert(comments)
-  //   .values({ payload: 'hello drizzle', userId: 1 })
-  //   .returning();
+    // const result = await db.insert(users).values({ username: 'jw' }).returning();
+    // const result = await db
+    //   .update(users)
+    //   .set({ isAdmin: true })
+    //   .where(eq(users.userId, 1))
+    //   .returning();
 
-  // const result = await db
-  //   .select({ paylaod: comments.payload })
-  //   .from(comments)
-  //   .where(eq(comments.userId, 1));
+    // const comment = await db
+    //   .insert(comments)
+    //   .values({ payload: 'hello drizzle', userId: 1 })
+    //   .returning();
 
-  const result = await db
-    .select()
-    .from(comments)
-    .leftJoin(users, eq(comments.userId, users.userId));
+    // const result = await db
+    //   .select({ paylaod: comments.payload })
+    //   .from(comments)
+    //   .where(eq(comments.userId, 1));
 
-  console.log(result);
-  ```
+    const result = await db
+      .select()
+      .from(comments)
+      .leftJoin(users, eq(comments.userId, users.userId));
+
+    console.log(result);
+    ```
+
+- Redis
+
+`bun add redis`
+
+```tsx
+import { createClient } from 'redis';
+
+const client = createClient().on('error', (err) =>
+  console.log('Redis Client Error', err),
+);
+
+await client.connect();
+
+await client.flushAll();
+
+await client.set('hello', 'redis');
+
+const r1 = await client.get('hello');
+console.log(r1);
+
+await client.hSet('users:1', {
+  username: 'jw',
+  password: 123,
+});
+
+const r2 = await client.hGetAll('users:1');
+console.log(r2);
+
+await client.disconnect();
+```
