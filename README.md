@@ -2798,7 +2798,8 @@ rest = res.fetchall()
 
 - Redis Caching
   `pip install "redis[hiredis]"`
-  ```python
+
+  ````python
   import redis
 
       r = redis.Redis(
@@ -2864,8 +2865,11 @@ rest = res.fetchall()
 
       ```
 
+  ````
+
 - pymongo
   `pip install pymongo`
+
   ```python
   from pymongo import MongoClient
 
@@ -2884,3 +2888,42 @@ rest = res.fetchall()
   client.close()
 
   ```
+
+## JS ORM (Drizzle)
+
+`bun init -y`
+
+`bun add drizzle-orm better-sqlite3`
+
+`bun add -D drizzle-kit`
+
+- drizzle.config.ts (이미 존재하는 db를 연결하는 경우)
+
+```tsx
+import { defineConfig } from 'drizzle-kit';
+
+export default defineConfig({
+  dialect: 'sqlite',
+  schema: './drizzle/schema.ts',
+  out: './drizzle',
+  dbCredentials: { url: './movies_download.db' },
+});
+```
+
+`bunx drizzle-kit introspect`
+
+- index.ts
+
+```tsx
+import { Database } from 'bun:sqlite';
+import { drizzle } from 'drizzle-orm/bun-sqlite';
+import { movies } from './drizzle/schema';
+
+const sqlite = new Database('movies_download.db'); // adapter
+
+const db = drizzle(sqlite);
+
+const results = await db.select().from(movies).limit(50);
+
+console.log(results);
+```

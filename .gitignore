@@ -2,3 +2,4 @@ movies_download.db
 movies_download_origin.db
 movies-data.json
 pg_backup
+node_modules
